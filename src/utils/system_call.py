@@ -15,8 +15,8 @@
 
 
 import os
+import subprocess
 
-from subprocess import getoutput
 from time import ctime
 
 
@@ -25,17 +25,25 @@ __author__ = "klaus-moser"
 __date__ = ctime(os.path.getmtime(__file__))
 
 
-def system_call(command: str) -> str:
+def system_call(command: str) -> tuple:
     """
     Make system calls and return the stdout.
 
     :param command: Command to execute.
-    :return: Stdout of the command.
+    :return: Tuple: stdout, stderr, return code.
     """
 
     try:
-        return getoutput(cmd=command)
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    except Exception as e:
-        print(e)
-        return ""
+        # Retrieving output and error messages, if any
+        stdout = result.stdout.decode('utf-8')  # Decode bytes to string
+        stderr = result.stderr.decode('utf-8')  # Decode bytes to string
+        return_code = result.returncode
+
+        return stdout, stderr, return_code
+
+    except subprocess.CalledProcessError as e:
+        # Log or handle the error as needed
+        print(f"Error executing command: {e}")
+        return None, None, e.return_code
