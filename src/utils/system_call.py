@@ -43,7 +43,10 @@ def system_call(command: str) -> tuple:
 
         return stdout, stderr, return_code
 
-    except subprocess.CalledProcessError as e:
-        # Log or handle the error as needed
-        print(f"Error executing command: {e}")
-        return None, None, e.return_code
+    except subprocess.SubprocessError as e:  # Handle subprocess-related errors
+        print(f"Subprocess error occurred: {e}")
+        return None, None, -1  # Return an error indicator or handle as needed
+
+    except FileNotFoundError as e:  # Handle file not found error (command not available on the system)
+        print(f"Command not found: {e}")
+        return None, None, -1  # Return an error indicator or handle as needed
