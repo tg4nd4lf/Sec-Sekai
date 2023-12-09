@@ -13,7 +13,6 @@
 
 """ Make system calls """
 
-
 import os
 import subprocess
 

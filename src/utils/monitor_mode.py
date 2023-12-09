@@ -15,6 +15,7 @@
 
 import os
 import argparse
+import netifaces
 
 from time import ctime
 from re import findall
@@ -25,21 +26,24 @@ __author__ = "klaus-moser"
 __date__ = ctime(os.path.getmtime(__file__))
 
 
-def wlan_interfaces_available() -> list:
+def get_wlan_interfaces() -> list:
     """
     Return a list of any wlan interfaces available.
 
     :return: List of strings. (e.g. [interface1, interface2, ...]).
     """
 
-    iwconfig = system_call("iwconfig")
+    wifi_interfaces = list()
+    interfaces = netifaces.interfaces()  # retrieve all available network interfaces on the system
 
-    if iwconfig != "":
-        interfaces = findall("wlan[0-9]", iwconfig)
-    else:
-        interfaces = list()
+    for iface in interfaces:
+        iface_details = netifaces.ifaddresses(iface)  # details (IP-Address, etc.) for interface
 
-    return interfaces
+        if netifaces.AF_INET in iface_details and netifaces.AF_INET6 in iface_details:  # check if IPv4 and IPv6 are there
+            if netifaces.AF_INET in iface_details[netifaces.AF_INET][0] and 'wireless' in iface_details[netifaces.AF_INET][0]:  # check if interface is Wi-Fi
+                wifi_interfaces.append(iface)
+
+    return wifi_interfaces
 
 
 def monitor_mode(interface: str) -> bool:
@@ -50,7 +54,7 @@ def monitor_mode(interface: str) -> bool:
     :return: True: Activated. False: Error.
     """
 
-    interfaces = wlan_interfaces_available()
+    interfaces = get_wlan_interfaces()
 
     if not interfaces:
         return False
