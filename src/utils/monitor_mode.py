@@ -46,7 +46,7 @@ def get_wlan_interfaces() -> list:
     return wifi_interfaces
 
 
-def monitor_mode(interface: str) -> bool:
+def switch_monitor_mode(interface: str, mode: str) -> bool:
     """
     Activate monitor for the selected interface, if a wlan interface is available.
 
@@ -62,8 +62,13 @@ def monitor_mode(interface: str) -> bool:
     if interface not in interfaces:
         return False
 
-    ret = system_call("sudo airmon-ng start {}".format(interface))
-    ret = system_call("sudo airmon-ng stop {}".format(interface))
+    if mode.lower() == "start":
+        # TODO: ret = system_call("sudo airmon-ng start {}".format(interface))
+        pass
+
+    if mode.lower() == "stop":
+        # TODO: ret = system_call("sudo airmon-ng stop {}".format(interface))
+        pass
 
 
 if __name__ == "__main__":
@@ -71,4 +76,4 @@ if __name__ == "__main__":
     parser.add_argument('interface', help="Interface to use.")  # positional argument
     args = parser.parse_args()
 
-    monitor_mode(interface=args.interface)
+    switch_monitor_mode(interface=args.interface)
