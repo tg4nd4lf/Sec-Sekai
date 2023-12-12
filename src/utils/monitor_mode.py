@@ -17,9 +17,10 @@ import os
 import argparse
 import netifaces
 
+from re import search
 from time import ctime
-from re import findall
-from src.utils.system_call import system_call
+from system_call import system_call, subprocess_call
+
 
 __version__ = "0.0.1"
 __author__ = "klaus-moser"
@@ -33,47 +34,59 @@ def get_wlan_interfaces() -> list:
     :return: List of strings. (e.g. [interface1, interface2, ...]).
     """
 
-    wifi_interfaces = list()
-    interfaces = netifaces.interfaces()  # retrieve all available network interfaces on the system
-
-    for iface in interfaces:
-        iface_details = netifaces.ifaddresses(iface)  # details (IP-Address, etc.) for interface
-
-        if netifaces.AF_INET in iface_details and netifaces.AF_INET6 in iface_details:  # check if IPv4 and IPv6 are there
-            if netifaces.AF_INET in iface_details[netifaces.AF_INET][0] and 'wireless' in iface_details[netifaces.AF_INET][0]:  # check if interface is Wi-Fi
-                wifi_interfaces.append(iface)
-
-    return wifi_interfaces
+    return netifaces.interfaces()  # retrieve all available network interfaces on the system
 
 
-def switch_monitor_mode(interface: str, mode: str) -> bool:
+def is_monitor_mode_enabled(interface: str) -> bool:
+    """
+    Check if monitor mode for given interface is already enabled.
+
+    interface: Interface to check monitor mode.
+    :return:
+    """
+
+    stdout, stderr, code = subprocess_call(command="iwconfig")
+
+    ret = False
+    if stdout and not code == -1:
+        if "{}mon".format(interface) in stdout:
+            interface = interface + "mon"
+        regex = "({})(.)+(Mode:Monitor)".format(interface)
+        match = search(regex, stdout)
+
+        if match:
+            return True
+    return ret
+
+
+def switch_monitor_mode(interface: str, mode: str = None) -> bool:
     """
     Activate monitor for the selected interface, if a wlan interface is available.
 
     :param interface: Interface to use the monitor mode.
+    :param mode: Mode: start or stop the monitor mode.
     :return: True: Activated. False: Error.
     """
 
     interfaces = get_wlan_interfaces()
 
-    if not interfaces:
+    if not interfaces or interface not in interfaces:
         return False
 
-    if interface not in interfaces:
-        return False
+    # TODO: airmon kill etc.
+    if not mode:
+        if is_monitor_mode_enabled(interface=interface):
+            mode = "stop"
+        else:
+            mode = "start"
 
-    if mode.lower() == "start":
-        # TODO: ret = system_call("sudo airmon-ng start {}".format(interface))
-        pass
-
-    if mode.lower() == "stop":
-        # TODO: ret = system_call("sudo airmon-ng stop {}".format(interface))
-        pass
+    ret = system_call("airmon-ng {} {}".format(mode, interface))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('interface', help="Interface to use.")  # positional argument
+    parser.add_argument('mode', choices=['start', 'stop'], help="Mode to use.")  # positional argument
     args = parser.parse_args()
 
-    switch_monitor_mode(interface=args.interface)
+    switch_monitor_mode(interface=args.interface, mode=args.mode)

@@ -24,7 +24,24 @@ __author__ = "klaus-moser"
 __date__ = ctime(os.path.getmtime(__file__))
 
 
-def system_call(command: str) -> tuple:
+def system_call(command: str) -> bool:
+    """
+    Use this function for primary for 'sudo' commands.
+
+    :param command: Command to execute.
+    :return: 0: Success; -1: No success.
+    """
+
+    try:
+        ret = os.system(command=command)
+        return True
+    # TODO: finer exception
+    except Exception as e:
+        # TODO: log error + return code
+        return False
+
+
+def subprocess_call(command: str) -> tuple:
     """
     Make system calls and return the stdout.
 
