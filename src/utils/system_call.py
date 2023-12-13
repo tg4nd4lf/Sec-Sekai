@@ -34,7 +34,10 @@ def system_call(command: str) -> bool:
 
     try:
         ret = os.system(command=command)
+        if ret == -1:
+            return False
         return True
+
     # TODO: finer exception
     except Exception as e:
         # TODO: log error + return code
@@ -66,3 +69,7 @@ def subprocess_call(command: str) -> tuple:
     except FileNotFoundError as e:  # Handle file not found error (command not available on the system)
         print(f"Command not found: {e}")
         return None, None, -1  # Return an error indicator or handle as needed
+
+
+if __name__ == "__main__":
+    print(__file__)

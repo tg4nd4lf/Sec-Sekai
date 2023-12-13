@@ -20,21 +20,12 @@ import netifaces
 from re import search
 from time import ctime
 from system_call import system_call, subprocess_call
+from wlan_interfaces import get_wlan_interfaces
 
 
 __version__ = "0.0.1"
 __author__ = "klaus-moser"
 __date__ = ctime(os.path.getmtime(__file__))
-
-
-def get_wlan_interfaces() -> list:
-    """
-    Return a list of any wlan interfaces available.
-
-    :return: List of strings. (e.g. [interface1, interface2, ...]).
-    """
-
-    return netifaces.interfaces()  # retrieve all available network interfaces on the system
 
 
 def is_monitor_mode_enabled(interface: str) -> bool:
@@ -51,8 +42,9 @@ def is_monitor_mode_enabled(interface: str) -> bool:
     if stdout and not code == -1:
         if "{}mon".format(interface) in stdout:
             interface = interface + "mon"
+
         regex = "({})(.)+(Mode:Monitor)".format(interface)
-        match = search(regex, stdout)
+        match = search(regex, stdout.replace("\n", ""))
 
         if match:
             return True
@@ -81,6 +73,11 @@ def switch_monitor_mode(interface: str, mode: str = None) -> bool:
             mode = "start"
 
     ret = system_call("airmon-ng {} {}".format(mode, interface))
+
+    if ret:
+        return True
+    else:
+        return False
 
 
 if __name__ == "__main__":
