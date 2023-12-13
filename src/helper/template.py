@@ -23,6 +23,8 @@ __author__ = "klaus-moser"
 __date__ = ctime(os.path.getmtime(__file__))
 
 
-# TODO:
 # Your code
 print("Hello World!")
+
+if __name__ == "__main__":
+    print(__file__)
