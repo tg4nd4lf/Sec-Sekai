@@ -24,7 +24,27 @@ __author__ = "klaus-moser"
 __date__ = ctime(os.path.getmtime(__file__))
 
 
-def system_call(command: str) -> tuple:
+def system_call(command: str) -> bool:
+    """
+    Use this function for primary for 'sudo' commands.
+
+    :param command: Command to execute.
+    :return: 0: Success; -1: No success.
+    """
+
+    try:
+        ret = os.system(command=command)
+        if ret == -1:
+            return False
+        return True
+
+    # TODO: finer exception
+    except Exception as e:
+        # TODO: log error + return code
+        return False
+
+
+def subprocess_call(command: str) -> tuple:
     """
     Make system calls and return the stdout.
 
@@ -49,3 +69,7 @@ def system_call(command: str) -> tuple:
     except FileNotFoundError as e:  # Handle file not found error (command not available on the system)
         print(f"Command not found: {e}")
         return None, None, -1  # Return an error indicator or handle as needed
+
+
+if __name__ == "__main__":
+    print(__file__)
