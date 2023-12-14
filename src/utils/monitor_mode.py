@@ -15,11 +15,10 @@
 
 import os
 import argparse
-import netifaces
 
 from re import search
 from time import ctime
-from system_call import system_call, subprocess_call
+from system_call_functions import system_call, subprocess_call
 from wlan_interfaces import get_wlan_interfaces
 
 
