@@ -17,7 +17,7 @@ import os
 import argparse
 
 from time import ctime
-from monitor_mode import is_monitor_mode_enabled
+from airmon import is_monitor_mode_enabled
 from system_call_functions import system_call
 from wlan_interfaces import get_wlan_interfaces
 from command_functions import build_airodump_command
