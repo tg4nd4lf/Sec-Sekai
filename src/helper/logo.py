@@ -23,7 +23,7 @@ __date__ = "placeholder"
 
 def print_logo(logo_path: str) -> None:
     """
-    Print logo from a "logo.txt" file.
+    Print logo from a "wifi_wizard_logo.txt" file.
 
     :return:
     """
@@ -39,7 +39,7 @@ def print_logo(logo_path: str) -> None:
 
     else:
         try:
-            with open(file="logo.txt") as l:
+            with open(file=logo_path) as l:
                 logo = l.readlines()
             for line in logo:
                 print(line, end="")
