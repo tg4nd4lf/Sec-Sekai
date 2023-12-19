@@ -2,7 +2,7 @@ import logging
 from os import getcwd, listdir, mkdir
 from os.path import join
 
-
+# TODO: write a basic logger
 # -------------------- .log folder --------------------
 log_dir = "logs"
 if not log_dir in listdir(getcwd()):
