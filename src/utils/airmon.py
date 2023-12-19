@@ -19,70 +19,94 @@ import argparse
 from re import search
 from time import ctime
 from system_call_functions import system_call, subprocess_call
-from wlan_interfaces import get_wlan_interfaces
-
+from netifaces import interfaces
 
 __version__ = "0.0.1"
 __author__ = "klaus-moser"
 __date__ = ctime(os.path.getmtime(__file__))
 
 
-def is_monitor_mode_enabled(interface: str) -> bool:
+class Airmon:
     """
-    Check if monitor mode for given interface is already enabled.
-
-    interface: Interface to check monitor mode.
-    :return:
+    Wrapper for the 'airmon-ng' program.
     """
 
-    stdout, stderr, code = subprocess_call(command="iwconfig")
+    def __init__(self):
+        pass
 
-    ret = False
-    if stdout and not code == -1:
-        if "{}mon".format(interface) in stdout:
-            interface = interface + "mon"
+    def __str__(self):
+        pass
 
-        regex = "({})(.)+(Mode:Monitor)".format(interface)
-        match = search(regex, stdout.replace("\n", ""))
+    @staticmethod
+    def get_interfaces() -> list:
+        """
+        Return a list of any available network interfaces on the system.
 
-        if match:
-            return True
-    return ret
+        :return: List of strings. (e.g. [interface1, interface2, ...]).
+        """
 
+        return interfaces()
 
-def switch_monitor_mode(interface: str, mode: str = None) -> bool:
-    """
-    Activate monitor for the selected interface, if a wlan interface is available.
+    @staticmethod
+    def is_monitor_mode_enabled(interface: str) -> bool:
+        """
+        Check if monitor mode for given interface is already enabled.
 
-    :param interface: Interface to use the monitor mode.
-    :param mode: Mode: start or stop the monitor mode.
-    :return: True: Activated. False: Error.
-    """
+        interface: Interface to check monitor mode.
+        :return: True: Enabled; False: Disabled.
+        """
 
-    interfaces = get_wlan_interfaces()
+        stdout, stderr, code = subprocess_call(command="iwconfig")
 
-    if not interfaces or interface not in interfaces:
-        return False
+        ret = False
+        if stdout and not code == -1:
+            if "{}mon".format(interface) in stdout:  # TODO: interface + mon
+                interface = interface + "mon"
 
-    # TODO: airmon kill etc.
-    if not mode:
-        if is_monitor_mode_enabled(interface=interface):
-            mode = "stop"
+            regex = "({})(.)+(Mode:Monitor)".format(interface)
+            match = search(regex, stdout.replace("\n", ""))
+
+            if match:
+                return True
+        return ret
+
+    @classmethod
+    def switch_monitor_mode(cls, interface: str) -> bool:
+        """
+        Activate monitor for the selected interface, if a wlan interface is available.
+
+        :param interface: Interface to use the monitor mode.
+        :return: True: Activated. False: Error.
+        """
+
+        interfaces = cls.get_interfaces()
+
+        if not interfaces:  # empty list
+            return False
+        # TODO: interface + mon
+        elif interface not in interfaces:  # interface not in list
+            if interface + 'mon' in interfaces:  # interface + mon in list
+                interface += 'mon'
+            else:  # interface + mon not in list
+                return False
+
+        if cls.is_monitor_mode_enabled(interface=interface):
+            command = "airmon-ng stop {} && service network-manager restart".format(interface)
         else:
-            mode = "start"
+            command = "airmon-ng start {} && airmon-ng check kill".format(interface)
 
-    ret = system_call("airmon-ng {} {}".format(mode, interface))
+        ret = system_call(command=command)
 
-    if ret:
-        return True
-    else:
-        return False
+        if ret:
+            return True
+        else:
+            return False
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('interface', help="Interface to use.")  # positional argument
-    parser.add_argument('mode', choices=['start', 'stop'], help="Mode to use.")  # positional argument
     args = parser.parse_args()
 
-    switch_monitor_mode(interface=args.interface, mode=args.mode)
+    c = Airmon()
+    c.switch_monitor_mode(args.interface)
