@@ -14,6 +14,7 @@
 """ Class for printing colors. """
 
 import os
+import sys
 
 from time import ctime
 
@@ -61,6 +62,21 @@ class Colors:
         'ENDC': '\033[0m',          # Ends color or formatting options
         'RESET': '\033[39m'         # Set text color back to default
     }
+
+    @classmethod
+    def print_colored_line(cls, text: str, color_name: str = None) -> None:
+        """
+        Method to print a colored line in the console.
+
+        text: The text to be printed.
+        color_name: The ANSI escape color_name for the desired color.
+        :return: None.
+        """
+        
+        if color_name in cls.COLORS_DICT:
+            print(f"{cls.COLORS_DICT.get(color_name)}{text}{cls.COLORS_DICT.get('ENDC')}")
+        else:
+            print(text)
 
 
 if __name__ == "__main__":
