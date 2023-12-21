@@ -48,27 +48,63 @@ class Airmon:
         return interfaces()
 
     @staticmethod
-    def is_monitor_mode_enabled(interface: str) -> bool:
+    def get_monitor_interface_name() -> str:
         """
         Check if monitor mode for given interface is already enabled.
+        If no interface is given the method tries to find if any interface has
+        the monitor mode enabled and returns the name.
 
-        interface: Interface to check monitor mode.
-        :return: True: Enabled; False: Disabled.
+        interface: Interface to check monitor mode. None: check if any other NIC has.
+        :return: interface_name or None.
         """
 
         stdout, stderr, code = subprocess_call(command="iwconfig")
 
-        ret = False
-        if stdout and not code == -1:
-            if "{}mon".format(interface) in stdout:  # TODO: interface + mon
-                interface = interface + "mon"
+        if not stdout and code == -1:  # error
+            return None
 
-            regex = "({})(.)+(Mode:Monitor)".format(interface)
-            match = search(regex, stdout.replace("\n", ""))
+        regex = "(.)+(Mode:Monitor)"  # is any NIC in monitor mode
+        match = search(regex, stdout.replace("\n", ""))
 
-            if match:
+        if match:  # monitor mode enabled
+            interface_local = match.group().split()[0]
+
+            return interface_local
+
+        else:  # no monitor mode found
+            return None
+
+    @staticmethod
+    def is_monitor_mode_enabled(interface: str) -> bool:
+        """
+        Check if monitor mode for given interface is already enabled.
+        ATTENTION: This function checks both possibilities:
+
+         1. <interface-name>
+         2. <interface-name>mon
+
+        interface: Interface to check monitor mode.
+        :return: True: enabled. False: disabled.
+        """
+
+        stdout, stderr, code = subprocess_call(command="iwconfig")
+
+        if not stdout and code == -1:  # error
+            return False
+
+        regex = "(.)+(Mode:Monitor)"  # is any NIC in monitor mode
+        match = search(regex, stdout.replace("\n", ""))
+
+        if match:  # monitor mode enabled
+            interface_local = match.group().split()[0]
+
+            if interface == interface_local or interface + "mon" == interface_local:
                 return True
-        return ret
+            else:
+                return False
+
+        else:  # no monitor mode found
+            return False
 
     @classmethod
     def switch_monitor_mode(cls, interface: str) -> bool:
@@ -79,18 +115,17 @@ class Airmon:
         :return: True: Activated. False: Error.
         """
 
-        interfaces = cls.get_interfaces()
+        interfaces_local = cls.get_interfaces()
 
-        if not interfaces:  # empty list
+        if not interfaces_local:  # no interfaces available at all
             return False
-        # TODO: interface + mon
-        elif interface not in interfaces:  # interface not in list
-            if interface + 'mon' in interfaces:  # interface + mon in list
-                interface += 'mon'
-            else:  # interface + mon not in list
-                return False
 
-        if cls.is_monitor_mode_enabled(interface=interface):
+        if cls.is_monitor_mode_enabled(interface=interface):  # monitor mode enabled
+            monitor_interface_name = cls.get_monitor_interface_name()
+
+            if interface in monitor_interface_name and not interface == monitor_interface_name:  # take the right name
+                interface = monitor_interface_name  # e.g. wlan0mon instead of wlan0
+
             command = "airmon-ng stop {} && service network-manager restart".format(interface)
         else:
             command = "airmon-ng start {} && airmon-ng check kill".format(interface)
