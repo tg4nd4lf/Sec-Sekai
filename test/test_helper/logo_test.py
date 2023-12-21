@@ -1,5 +1,5 @@
 import pytest
-from src.helper.logo import *
+from src.helper.logo import print_logo
 
 
 class TestLogo:
@@ -8,7 +8,7 @@ class TestLogo:
     """
 
     @pytest.mark.parametrize("test_input,expected",
-                             [("", "(empty?)\n"), ("loggo.txt", "(logo?)\n"), ("logo.png", "(.txt?)\n")])
+                             [("", "(empty?)\n"), ("loggo.txt", "(logo?)\n"), ("../test_files/logo.png", "(.txt?)\n")])
     def test_print_logo(self, test_input, expected, capsys) -> None:
         """
         Method: def print_logo(logo_path: str) -> None
