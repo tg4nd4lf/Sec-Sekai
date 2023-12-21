@@ -8,15 +8,10 @@ class TestLogo:
     """
 
     @pytest.mark.parametrize("test_input,expected",
-                             [("", "(empty?)\n"), ("loggo.txt", "(logo?)\n"), ("../test_files/logo.png", "(.txt?)\n")])
+                             [("", "(empty?)\n"), ("loggo.txt", "(logo?)\n"), ("../data/logo.png", "(.txt?)\n")])
     def test_print_logo(self, test_input, expected, capsys) -> None:
         """
-        Method: def print_logo(logo_path: str) -> None
-
-        :param test_input: Input.
-        :param expected: Expected result.
-        :param capsys: Built-in pytest fixture that captures the output to stdout and stderr.
-        :return:
+        Test for print logo.
         """
 
         # act

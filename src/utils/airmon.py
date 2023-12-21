@@ -18,7 +18,7 @@ import argparse
 
 from re import search
 from time import ctime
-from system_call_functions import system_call, subprocess_call
+from src.utils.system_call_functions import system_call, subprocess_call
 from netifaces import interfaces
 
 __version__ = "0.0.1"
