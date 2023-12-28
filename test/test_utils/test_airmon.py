@@ -28,3 +28,11 @@ class TestAirmon:
             # assert
             mock_subprocess_call.assert_called_once_with(command="iwconfig")
             assert result == expected
+
+    def test_is_monitor_enabled(self):
+        # TODO
+        pass
+
+    def test_switch_monitor_mode(self):
+        # TODO
+        pass
