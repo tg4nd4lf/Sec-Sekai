@@ -54,3 +54,27 @@ register = 0b00100000
 
 register = register ^ bit_mask
 # register ^= bit_mask
+
+
+# 5. Binary shift left (== *2)
+"""
+register = register << 1
+register = 0b00000100 (4)
+------------------------
+register'= 0b00001000 (8)
+"""
+
+register = register << 1
+# register <<= 1
+
+
+# 6. Binary shift right (== /2)
+"""
+register = register >> 1
+register = 0b00000100 (4)
+------------------------
+register'= 0b00000010 (2)
+"""
+
+register = register >> 1
+# register >>= 1
